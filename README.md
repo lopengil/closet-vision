@@ -25,6 +25,16 @@ can add a garment type by adding one line.
 
 ## Use it
 
+Needs **Python 3.10 or newer**. On a Mac, the built-in `python3` (from Xcode
+Command Line Tools) is 3.9 with an old pip and fails with "inconsistent name
+... UNKNOWN". Install a newer Python and use a virtual environment:
+
+```bash
+brew install python@3.12            # or the installer from python.org
+python3.12 -m venv .venv && source .venv/bin/activate
+pip install --upgrade pip
+```
+
 ```bash
 pip install "closet-vision[tagger] @ git+https://github.com/lopengil/closet-vision.git"
 # CPU-only torch is much smaller: pip install torch --index-url https://download.pytorch.org/whl/cpu
