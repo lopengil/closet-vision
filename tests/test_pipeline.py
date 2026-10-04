@@ -23,6 +23,7 @@ def test_nudges_and_waterproof(cutout_rgba):
 def test_without_tagger_still_gives_colors(cutout_rgba):
     s = pipeline.tag(cutout_rgba, None)
     assert s.colors and s.confidence["kind"] == 0.0
+    assert s.slot == "" and s.name == "Red piece"
 
 
 def test_server(monkeypatch, cutout_rgba, photo):

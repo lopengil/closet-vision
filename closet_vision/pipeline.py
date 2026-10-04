@@ -61,10 +61,11 @@ def tag(garment: Image.Image, tagger: Optional[Tagger]) -> Suggestion:
     conf = {"colors": found[0][1] if found else 0.0}
     alts: dict[str, list[str]] = {}
 
-    if tagger is None:
-        kind = taxonomy.by_label("t-shirt")
-        pattern, material, styles = "solid", None, []
-        conf.update(kind=0.0, pattern=0.0, material=0.0, styles=0.0)
+    if tagger is None:  # colours only: leave the rest for the human
+        return Suggestion(name=f"{color_names[0].capitalize()} piece", slot="", kind="",
+                          colors=color_names, pattern="solid", material=None, styles=[],
+                          formality=2, warmth=1, waterproof=False,
+                          confidence={**conf, "kind": 0.0, "pattern": 0.0})
     else:
         img = _on_white(garment)
         kinds = tagger.rank(img, [k.label for k in taxonomy.KINDS])
