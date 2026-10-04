@@ -69,7 +69,30 @@ Returns `{"cutout_png": <base64>, "hanger_png": <base64>, "suggestion": {...}}`.
 Open `http://localhost:7860/` for a tiny upload demo.
 
 Environment: `CLOSET_VISION_MODEL` (any CLIP model id), `CLOSET_VISION_SEG`
-(rembg model, e.g. `u2netp`), `CLOSET_VISION_TAGGER=off` (cut-out + colours only).
+(rembg model, e.g. `u2netp`), `CLOSET_VISION_TAGGER=off` (cut-out + colours only),
+`CLOSET_VISION_STYLE=off` (no style fingerprints / outfit scores).
+
+## Style fingerprints and outfit scores (optional)
+
+```bash
+pip install "closet-vision[tagger,server,style] @ git+https://github.com/lopengil/closet-vision.git"
+```
+
+With the `style` extra (torch, ~150 MB of [Dressify](https://huggingface.co/Stylique/dressify-models)
+weights, MIT), `/process` also returns `"embedding"`: 512 numbers describing
+the item's look. Two more endpoints:
+
+- `POST /embed` with `photo` (already cut out) returns `{"embedding": [...]}`.
+- `POST /score` with `{"outfits": [[embedding, ...], ...]}` returns
+  `{"scores": [0..1, ...]}`: how well each outfit's items go together.
+
+Be careful with the scores. On 300 outfits from Polyvore's disjoint test set,
+real outfits and shuffled ones scored the same (AUC 0.51, where 0.5 is a coin
+flip; `python scripts/check_dressify.py`). Check it against your own taste
+before relying on it: put outfits you like in `liked/<outfit>/*.jpg`, ones you
+don't in `disliked/<outfit>/*.jpg`, and run `closet-vision validate liked disliked`.
+The fingerprints are still handy for finding near-duplicate items
+(`closet_vision.style.similar_pairs`).
 
 ## Put it on Hugging Face
 

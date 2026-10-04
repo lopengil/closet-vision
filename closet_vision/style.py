@@ -143,7 +143,10 @@ class StyleModel:
                 if len(items) < 2:
                     out.append(0.5)                 # nothing to compare
                     continue
-                x = self.torch.tensor(np.asarray(items, dtype=np.float32)).unsqueeze(0)
+                arr = np.asarray(items, dtype=np.float32)
+                if arr.ndim != 2 or arr.shape[1] != DIM or len(arr) > 12:
+                    raise ValueError(f"an outfit is 2-12 fingerprints of {DIM} numbers")
+                x = self.torch.from_numpy(arr).unsqueeze(0)
                 out.append(float(self.torch.sigmoid(self.outfit(x))[0]))
         return out
 
