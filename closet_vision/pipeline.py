@@ -34,14 +34,18 @@ class Result:
     cutout: Image.Image      # garment only, transparent background
     hanger: Image.Image      # garment on a hanger / shelf, transparent
     suggestion: Suggestion
+    embedding: Optional[list[float]] = None   # 512-number style fingerprint (Dressify)
 
     def to_json(self) -> dict:
         def png(img):
             buf = io.BytesIO()
             img.save(buf, "PNG")
             return base64.b64encode(buf.getvalue()).decode()
-        return {"cutout_png": png(self.cutout), "hanger_png": png(self.hanger),
-                "suggestion": self.suggestion.__dict__}
+        out = {"cutout_png": png(self.cutout), "hanger_png": png(self.hanger),
+               "suggestion": self.suggestion.__dict__}
+        if self.embedding is not None:
+            out["embedding"] = self.embedding
+        return out
 
 
 def _clamp(v, lo, hi):
@@ -98,8 +102,13 @@ def tag(garment: Image.Image, tagger: Optional[Tagger]) -> Suggestion:
 
 
 def process(photo, tagger: Optional[Tagger] = None, *,
-            model: str = cutout.DEFAULT_MODEL, hanger_in_photo: bool = True) -> Result:
+            model: str = cutout.DEFAULT_MODEL, hanger_in_photo: bool = True,
+            style=None) -> Result:
+    """style: a closet_vision.style.StyleModel to also return the item's fingerprint."""
     garment = cutout.extract(photo, model=model, hanger_in_photo=hanger_in_photo)
     suggestion = tag(garment, tagger)
+    embedding = None
+    if style is not None:
+        embedding = [round(float(x), 5) for x in style.embed([garment])[0]]
     return Result(cutout=garment, hanger=hanger.on_hanger(garment, suggestion.slot),
-                  suggestion=suggestion)
+                  suggestion=suggestion, embedding=embedding)
